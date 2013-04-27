@@ -217,7 +217,7 @@ var Brait = {}, exports = Brait;
   Stimulus.create = function(e, loc, type) {
 
     var location = e ? new Flora.Vector(e.offsetX, e.offsetY) : loc;
-    var stimulus = new Brait.Stimulus({
+    new Brait.Stimulus({
       location: location,
       size: getRandomNumber(15, 75),
       type: type
@@ -225,30 +225,24 @@ var Brait = {}, exports = Brait;
   };
 
   Stimulus.createHeat = function(e) {
-
-    var location = new Flora.Vector(e.offsetX, e.offsetY);
-    var stimulus = new Brait.Stimulus({
-      location: location,
+    new Brait.Stimulus({
+      location: new Flora.Vector(e.offsetX, e.offsetY),
       size: getRandomNumber(15, 75),
       type: [Brait.Heat]
     });
   };
 
   Stimulus.createCold = function(e) {
-
-    var location = new Flora.Vector(e.offsetX, e.offsetY);
-    var stimulus = new Brait.Stimulus({
-      location: location,
+    new Brait.Stimulus({
+      location: new Flora.Vector(e.offsetX, e.offsetY),
       size: getRandomNumber(15, 75),
       type: [Brait.Cold]
     });
   };
 
   Stimulus.createLight = function(e) {
-
-    var location = new Flora.Vector(e.offsetX, e.offsetY);
-    var stimulus = new Brait.Stimulus({
-      location: location,
+    new Brait.Stimulus({
+      location: new Flora.Vector(e.offsetX, e.offsetY),
       size: getRandomNumber(15, 75),
       type: [Brait.Light]
     });
@@ -378,8 +372,7 @@ var Brait = {}, exports = Brait;
     var system = Flora.Mantle.System,
         lights = system._Caches.Light,
         x = lights.list[i].location.x,
-        y = lights.list[i].location.y,
-        d = getRandomNumber(1, 5);
+        y = lights.list[i].location.y;
 
     system.add('ParticleSystem', {
       location: new Flora.Vector(x, y),

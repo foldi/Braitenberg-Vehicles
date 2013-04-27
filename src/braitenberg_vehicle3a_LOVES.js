@@ -20,7 +20,7 @@ Flora.Mantle.System.create(function() {
   // create vehicles
   for (i = 0; i < maxVehicles; i += 1) {
 
-    var vehicle = new Brait.Vehicle({
+    new Brait.Vehicle({
       system: this,
       controlCamera: !i,
       color: !i ? [255, 255, 255] : [255, 100, 0],

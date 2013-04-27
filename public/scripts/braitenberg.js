@@ -1,3 +1,30 @@
+/*
+Braitenberg-Vehicles
+Copyright (c) 2013 Vince Allen
+vince@vinceallen.com
+http://www.vinceallen.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+/* Version: 1.0.0 */
+/* Build time: April 27, 2013 01:16:44 */
+
 /*global Flora, document, setTimeout */
 /** @namespace */
 var Brait = {}, exports = Brait;
@@ -217,7 +244,7 @@ var Brait = {}, exports = Brait;
   Stimulus.create = function(e, loc, type) {
 
     var location = e ? new Flora.Vector(e.offsetX, e.offsetY) : loc;
-    var stimulus = new Brait.Stimulus({
+    new Brait.Stimulus({
       location: location,
       size: getRandomNumber(15, 75),
       type: type
@@ -225,30 +252,24 @@ var Brait = {}, exports = Brait;
   };
 
   Stimulus.createHeat = function(e) {
-
-    var location = new Flora.Vector(e.offsetX, e.offsetY);
-    var stimulus = new Brait.Stimulus({
-      location: location,
+    new Brait.Stimulus({
+      location: new Flora.Vector(e.offsetX, e.offsetY),
       size: getRandomNumber(15, 75),
       type: [Brait.Heat]
     });
   };
 
   Stimulus.createCold = function(e) {
-
-    var location = new Flora.Vector(e.offsetX, e.offsetY);
-    var stimulus = new Brait.Stimulus({
-      location: location,
+    new Brait.Stimulus({
+      location: new Flora.Vector(e.offsetX, e.offsetY),
       size: getRandomNumber(15, 75),
       type: [Brait.Cold]
     });
   };
 
   Stimulus.createLight = function(e) {
-
-    var location = new Flora.Vector(e.offsetX, e.offsetY);
-    var stimulus = new Brait.Stimulus({
-      location: location,
+    new Brait.Stimulus({
+      location: new Flora.Vector(e.offsetX, e.offsetY),
       size: getRandomNumber(15, 75),
       type: [Brait.Light]
     });
@@ -378,8 +399,7 @@ var Brait = {}, exports = Brait;
     var system = Flora.Mantle.System,
         lights = system._Caches.Light,
         x = lights.list[i].location.x,
-        y = lights.list[i].location.y,
-        d = getRandomNumber(1, 5);
+        y = lights.list[i].location.y;
 
     system.add('ParticleSystem', {
       location: new Flora.Vector(x, y),
