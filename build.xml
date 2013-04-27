@@ -1,3 +1,5 @@
+<!-- To build the release target, you need the following files in /lib -->
+<!-- js.jar, jshint.js -->
 <project name="Braitenberg-Vehicles" default="build.dev">
 
   <target name="build.dev" depends="

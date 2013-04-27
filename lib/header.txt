@@ -1,7 +1,0 @@
-/*
-%PROJECTNAME%
-%LICENSE%
-*/
-/* Version: %VERSION% */
-/* Build time: %BUILDTIME% */
-
