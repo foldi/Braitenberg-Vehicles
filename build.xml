@@ -1,0 +1,125 @@
+<project name="Braitenberg-Vehicles" default="build.dev">
+
+  <target name="build.dev" depends="
+      clean,
+      init,
+      bake,
+      deploy">
+  </target>
+
+  <target name="build.release" depends="
+      clean,
+      init,
+      validateJS,
+      bake,
+      deploy">
+  </target>
+
+  <loadproperties srcfile="build.properties" />
+
+  <loadfile property="license" srcfile="license.txt" />
+
+  <tstamp>
+    <format property="build.time"
+            pattern="MMMM d, yyyy hh:mm:ss"
+            locale="en,US"/>
+  </tstamp>
+
+  <!-- Check if build folder exists -->
+  <target name="checkBuild">
+    <condition property="cleandir">
+      <available file="${build.dir}" type="dir"/>
+    </condition>
+  </target>
+
+  <!-- Delete all files in build -->
+  <target name="cleanBuild" depends="checkBuild" if="cleandir">
+    <delete>
+      <fileset dir="${build.dir}" includes="**/*.js">
+      </fileset>
+    </delete>
+  </target>
+
+  <!-- Remove entire folders -->
+  <target name="clean" depends="cleanBuild">
+    <delete dir="${jsdoc.output}"/>
+  </target>
+
+  <!-- Create folders for build, backup, and doc files. -->
+  <target name="init">
+    <mkdir dir="${build.dir}"/>
+  </target>
+
+  <!-- Validate via jshint -->
+  <target name="validateJS">
+    <apply executable="java" failonerror="true" parallel="true">
+      <fileset dir="${src.dir}" includes="**/*.js" />
+      <arg line="-jar" />
+      <arg path="${rhino}" />
+      <arg path="${jshint}" />
+      <srcfile/>
+      <arg line="${jshint.options}" />
+    </apply>
+  </target>
+
+  <!-- Minify -->
+  <target name="minifyJS">
+    <apply executable="java" failonerror="true">
+      <fileset dir="${build.dir}" includes="*.js" />
+      <mapper type="glob" from="*.js" to="${build.dir}/*.min.js"/>
+
+      <arg line="-jar"/>
+      <arg path="${closure}"/>
+      <arg line="${closure.options}"/>
+
+      <arg line="--js"/>
+      <srcfile/>
+
+      <arg line="--js_output_file"/>
+      <targetfile/>
+    </apply>
+  </target>
+
+  <!-- Bake for development: the final step -->
+  <target name="bake">
+
+    <copy todir="${build.dir}" overwrite="true">
+      <fileset dir="${src.dir}"/>
+    </copy>
+
+    <loadfile property="buildheader" srcFile="lib/header.txt"/>
+    <replaceregexp match="(/\*.*\*/.*)??" flags="sm"
+        replace="${buildheader}">
+        <fileset dir="${build.dir}">
+            <include name="**/*.js"/>
+        </fileset>
+    </replaceregexp>
+
+    <!-- Searches for %VERSION% in the build directory and replaces with -->
+    <!-- the version number found in build.properties. -->
+    <replaceregexp match="%VERSION%" replace="${version}" flags="g" byline="true">
+      <fileset dir="${build.dir}" includes="**/*"/>
+    </replaceregexp>
+    <!-- Searches for %PROJECTNAME% in the build directory and replaces with the project name -->
+    <replaceregexp match="%PROJECTNAME%" replace="${projectName}" flags="g" byline="true">
+      <fileset dir="${build.dir}" includes="**/*"/>
+    </replaceregexp>
+    <!-- Searches for %LICENSE% in the build directory and replaces with the license -->
+    <replaceregexp match="%LICENSE%" replace="${license}" flags="g" byline="true">
+      <fileset dir="${build.dir}" includes="**/*"/>
+    </replaceregexp>
+    <!-- Searches for %BUILDTIME% in the build directory and replaces with the timestamp -->
+    <replaceregexp match="%BUILDTIME%" replace="${build.time}" flags="g" byline="true">
+      <fileset dir="${build.dir}" includes="**/*"/>
+    </replaceregexp>
+  </target>
+
+
+  <!-- Copy: copy fat files to public/scripts -->
+  <target name="deploy">
+    <copy todir="${scripts.dir}" overwrite="true">
+      <fileset dir="${build.dir}"/>
+    </copy>
+  </target>
+
+</project>
