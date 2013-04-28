@@ -119,7 +119,7 @@ var Brait = {}, exports = Brait;
       }
 
       // check if agent intersects w stimulators
-      var lights = Flora.Mantle.System._Caches.Light;
+      var lights = Flora.Burner.System._Caches.Light;
       if (lights) {
         for (i = 0, max = lights.list.length; i < max; i += 1) {
           // check the obj has not been marked as deleted
@@ -131,7 +131,7 @@ var Brait = {}, exports = Brait;
         }
       }
 
-      var oxygen = Flora.Mantle.System._Caches.Oxygen;
+      var oxygen = Flora.Burner.System._Caches.Oxygen;
       if (oxygen) {
         for (i = 0, max = oxygen.list.length; i < max; i += 1) {
           // check the obj has not been marked as deleted
@@ -143,7 +143,7 @@ var Brait = {}, exports = Brait;
         }
       }
 
-      var food = Flora.Mantle.System._Caches.Food;
+      var food = Flora.Burner.System._Caches.Food;
       if (food) {
         for (i = 0, max = food.list.length; i < max; i += 1) {
           // check the obj has not been marked as deleted
@@ -173,7 +173,7 @@ var Brait = {}, exports = Brait;
    */
   function Sensor(options) {
 
-    var system = Flora.Mantle.System,
+    var system = Flora.Burner.System,
         type = options.type,
         behavior = options.behavior,
         afterStep = options.afterStep || Sensor.afterStep;
@@ -187,7 +187,7 @@ var Brait = {}, exports = Brait;
 
   Sensor.afterStep = function() {
 
-    var system = Flora.Mantle.System;
+    var system = Flora.Burner.System;
 
     return function() {
       if (this.activated) {
@@ -219,7 +219,7 @@ var Brait = {}, exports = Brait;
    */
   function Stimulus(options) {
 
-    var system = Flora.Mantle.System,
+    var system = Flora.Burner.System,
         location = options.location,
         size = options.size,
         type = options.type;
@@ -396,7 +396,7 @@ var Brait = {}, exports = Brait;
 
   Light.collide = function(i) {
 
-    var system = Flora.Mantle.System,
+    var system = Flora.Burner.System,
         lights = system._Caches.Light,
         x = lights.list[i].location.x,
         y = lights.list[i].location.y;
@@ -418,7 +418,7 @@ var Brait = {}, exports = Brait;
 
     system.destroyElement(lights.list[i]);
 
-    var world = Flora.Mantle.System.allWorlds()[0];
+    var world = Flora.Burner.System.allWorlds()[0];
 
     Brait.Stimulus.create(null, new Flora.Vector(getRandomNumber(0, world.bounds[1]),
         getRandomNumber(0, world.bounds[2])), [Brait.Light]);
@@ -466,7 +466,7 @@ var Brait = {}, exports = Brait;
 
   Oxygen.collide = function(i) {
 
-    var system = Flora.Mantle.System,
+    var system = Flora.Burner.System,
         world = system.allWorlds()[0],
         oxygen = system._Caches.Oxygen;
 
@@ -519,7 +519,7 @@ var Brait = {}, exports = Brait;
 
   Food.collide = function(i) {
 
-    var system = Flora.Mantle.System,
+    var system = Flora.Burner.System,
         world = system.allWorlds()[0],
         food = system._Caches.Food;
 

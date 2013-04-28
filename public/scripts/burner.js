@@ -1,5 +1,5 @@
 /*
-Mantle
+Burner
 Copyright (c) 2013 Vince Allen
 vince@vinceallen.com
 http://www.vinceallen.com
@@ -22,20 +22,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* Version: 1.1.0 */
-/* Build time: April 27, 2013 10:28:51 */
-/** @namespace */
-function Mantle(exports, opt_parent) {
+/* Version: 1.0.0 */
+/* Build time: April 28, 2013 01:53:57 *//** @namespace */
+function Burner(exports, opt_parent) {
 
-'use strict';
+  'use strict';
 
-/**
-* If using Mantle as a renderer in a
-* parent object, pass a reference to the parent
-* via the opt_parent param.
-*/
-var parent = opt_parent || null;
-/*global window */
+  /**
+   * If using Burner as a renderer in a
+   * parent object, pass a reference to the parent
+   * via the opt_parent param.
+   */
+  var parent = opt_parent || null;/*global window */
 /**
  * RequestAnimationFrame shim layer with setTimeout fallback
  * @param {function} callback The function to call.
@@ -940,12 +938,12 @@ System._resizeTime = 0;
  * @param {boolean} opt_noStart If true, _update is not called. Use to setup a System
  *    and start the _update loop at a later time.
  * @param {boolean} opt_reset If true, user input and pubsub event listeners are not added.
- * @example This example assumes Mantle lives under the 'Anim' namespace. The setup
+ * @example This example assumes Burner lives under the 'Anim' namespace. The setup
  *    function updates the world's gravity and coefficient of friction. Passing 'null'
  *    forces the system to use document.body as the world. It overrides the system
  *    feature detection by passing its own features. It also delays starting the system.
  *
- * Anim.Mantle.System.create(function() {
+ * Anim.Burner.System.create(function() {
  *   Anim.World.update({
  *     gravity: new Anim.Vector(0, 1),
  *     c: 0.1
@@ -1172,7 +1170,7 @@ System._updateCacheLookup = function(obj, val) {
  * Adds an object to the system.
  *
  * @param {string} klass The object's class. The system assumes
- *    Mantle lives under a top level namespace that holds classes
+ *    Burner lives under a top level namespace that holds classes
  *    representing objects that live in the system.
  * @param {Object} opt_options A map of properties used by the
  *    object's constuctor to define the object's attributes.
@@ -1189,13 +1187,14 @@ System.add = function(klass, opt_options) {
   var options = opt_options || {},
       records = this.allElements(),
       recordsLookup = this._records.lookup,
-      parentNode = null;
+      parentNode = null, el;
 
   if (!options.world || exports.Utils.getDataType(options.world) !== 'object') {
     options.world = records[0];
   } else {
     // if a world was passed, find its reference in _records
-    options.world = System.getWorld(options.world.el);
+    el = options.world.el ? options.world.el : options.world;
+    options.world = System.getWorld(el);
   }
 
   // recycle object if one is available
@@ -1690,8 +1689,8 @@ function World(el) {
   this.angle = 0;
   this.scale = 1;
   this.color = 'transparent';
-  this.borderColor = 'white';
-  this.borderStyle = 'solid';
+  this.borderColor = 'transparent';
+  this.borderStyle = 'none';
   this.borderWidth = '1';
 
   /**
@@ -1760,7 +1759,7 @@ World.prototype.draw = function() {
  */
 World.prototype._getCSSText = function(props) {
 
-  var color, borderColor, position, system = exports.System;
+  var color, borderColor, position, system = exports.System, utils = exports.Utils;
 
   if (system.supportedFeatures.csstransforms3d) {
     position = [
@@ -1785,7 +1784,9 @@ World.prototype._getCSSText = function(props) {
   }
 
   color = 'rgb(' + props.color[0] + ', ' + props.color[1] + ', ' + props.color[2] + ')';
-  borderColor = 'rgb(' + props.borderColor[0] + ', ' + props.borderColor[1] + ', ' + props.borderColor[2] + ')';
+
+  borderColor = utils.getDataType(props.borderColor) === 'array' ?
+      'rgb(' + props.borderColor[0] + ', ' + props.borderColor[1] + ', ' + props.borderColor[2] + ')' : props.borderColor;
 
   return [
     position,
@@ -1808,9 +1809,10 @@ World.prototype._getCSSText = function(props) {
  * @param {Object} opt_props A hash of properties to update.
  * @param {Object|Array} opt_worlds A single reference of an array of
  *    references to DOM elements representing as System worlds.
+ * @param {boolean} opt_center Set to true to center the world.
  * @public
  */
-World.update = function(opt_props, opt_worlds) {
+World.update = function(opt_props, opt_worlds, opt_center) {
 
   var i, max, key, el, utils = exports.Utils,
       worlds = opt_worlds, collection = [],
@@ -1845,8 +1847,10 @@ World.update = function(opt_props, opt_worlds) {
     // get bounds again in case style updates had an effect
     collection[i].bounds = collection[i]._getBounds();
     // center the world
-    collection[i].location = new exports.Vector((screenDimensions.width / 2) - (collection[i].bounds[1] / 2),
+    if (opt_center) {
+      collection[i].location = new exports.Vector((screenDimensions.width / 2) - (collection[i].bounds[1] / 2),
           (screenDimensions.height / 2) - (collection[i].bounds[2] / 2));
+    }
 
   }
 
@@ -1892,4 +1896,4 @@ World.prototype._getBounds = function() {
 };
 
 exports.World = World;
-}
+} // Burner end.

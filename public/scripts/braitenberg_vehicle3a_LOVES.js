@@ -26,14 +26,14 @@ THE SOFTWARE.
 /* Build time: April 27, 2013 04:14:29 */
 
 /*global Flora, Brait, document */
-Flora.Mantle.System.create(function() {
+Flora.Burner.System.create(function() {
 
   var i, max,
       maxVehicles = 6,
       getRandomNumber = Flora.Utils.getRandomNumber,
-      world = Flora.Mantle.System.allWorlds()[0];
+      world = Flora.Burner.System.allWorlds()[0];
 
-  Flora.Mantle.World.update({
+  Flora.Burner.World.update({
     c: 0.01,
     gravity: new Flora.Vector(),
     width: Flora.Utils.getWindowSize().width / 0.45,
@@ -42,7 +42,7 @@ Flora.Mantle.System.create(function() {
     borderStyle: 'solid',
     borderColor: [100, 100, 100],
     color: [0, 0, 0]
-  });
+  }, null, true);
 
   // create vehicles
   for (i = 0; i < maxVehicles; i += 1) {
@@ -79,5 +79,5 @@ Flora.Utils.addEvent(document.getElementById('buttonStart'), "mouseup", function
     e.stopPropagation();
   }
   document.getElementById('containerMenu').removeChild(document.getElementById('containerButton'));
-  Flora.Mantle.System.start();
+  Flora.Burner.System.start();
 });
