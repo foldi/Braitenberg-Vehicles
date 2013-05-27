@@ -1,26 +1,15 @@
-/*global Flora, Brait, document */
-Flora.Mantle.System.create(function() {
+/*global Flora, Burner, Brait, document */
+Burner.System.init(function() {
 
   var i, max,
       maxVehicles = 6,
       getRandomNumber = Flora.Utils.getRandomNumber,
-      world = Flora.Mantle.System.allWorlds()[0];
-
-  Flora.Mantle.World.update({
-    c: 0.01,
-    gravity: new Flora.Vector(),
-    width: Flora.Utils.getWindowSize().width / 0.45,
-    height: Flora.Utils.getWindowSize().height / 0.45,
-    borderWidth: 1,
-    borderStyle: 'solid',
-    borderColor: [100, 100, 100],
-    color: [0, 0, 0]
-  });
+      world = Burner.System.firstWorld();
 
   // create vehicles
   for (i = 0; i < maxVehicles; i += 1) {
 
-    new Brait.Vehicle({
+    var obj = new Brait.Vehicle({
       system: this,
       controlCamera: !i,
       color: !i ? [255, 255, 255] : [255, 100, 0],
@@ -28,22 +17,41 @@ Flora.Mantle.System.create(function() {
       viewArgs: [i],
       sensors: [
         new Brait.Sensor({
-          type: 'cold',
+          type: 'food',
           behavior: 'LOVES'
         })
-      ]
+      ],
+      collisions: {
+        'food': Brait.Food.collide
+      }
     });
+    var eye = document.createElement('div');
+    eye.id = 'eye' + obj.id;
+    eye.className = 'eye';
+    eye.style.background = !i ? 'rgb(100, 100, 100)' : 'rgb(255, 255, 255)',
+    eye.style.opacity = 1;
+    obj.el.appendChild(eye);
   }
 
   // create stimulants
   for (i = 0, max = (0.02 * world.bounds[1]); i < max; i += 1) {
-    Brait.Stimulus.create(null, new Flora.Vector(getRandomNumber(0, world.bounds[1]),
-        getRandomNumber(0, world.bounds[2])), [Brait.Cold]);
+    Brait.Stimulus.create(null, new Burner.Vector(getRandomNumber(0, world.width),
+        getRandomNumber(0, world.height)), [Brait.Food]);
   }
 
   // add event listener to create random stimulant on mouseup
-  Flora.Utils.addEvent(document, 'mouseup', Brait.Stimulus.createCold);
+  Flora.Utils.addEvent(document, 'mouseup', Brait.Stimulus.createFood);
 
+}, {
+  c: 0.01,
+  gravity: new Burner.Vector(),
+  width: Flora.Utils.getWindowSize().width / 0.45,
+  height: Flora.Utils.getWindowSize().height / 0.45,
+  borderWidth: 1,
+  borderStyle: 'dashed',
+  borderColor: [100, 100, 100],
+  color: [0, 0, 0],
+  boundToWindow: false
 }, null, null, true);
 
 Flora.Utils.addEvent(document.getElementById('buttonStart'), "mouseup", function(e) {
@@ -52,5 +60,5 @@ Flora.Utils.addEvent(document.getElementById('buttonStart'), "mouseup", function
     e.stopPropagation();
   }
   document.getElementById('containerMenu').removeChild(document.getElementById('containerButton'));
-  Flora.Mantle.System.start();
+  Burner.System.start();
 });

@@ -1,4 +1,4 @@
-/*global Flora, document, setTimeout */
+/*global Flora, Burner, document, setTimeout */
 /** @namespace */
 var Brait = {}, exports = Brait;
 
@@ -39,21 +39,21 @@ var Brait = {}, exports = Brait;
 
     return system.add('Agent', {
       sensors: sensors,
-      velocity: new Flora.Vector(getRandomNumber(-1, 1, true),
+      velocity: new Burner.Vector(getRandomNumber(-1, 1, true),
           getRandomNumber(-1, 1, true)),
       motorSpeed: 4,
       minSpeed: 1,
       maxSpeed: getRandomNumber(5, 10, true),
       maxSteeringForce: getRandomNumber(3, 5, true),
       controlCamera: controlCamera,
-      wrapEdges: true,
+      wrapWorldEdges: true,
       color: color,
       width: 22,
       height: 22,
       borderWidth: 3,
       borderStyle: 'solid',
       borderColor: borderColor,
-      borderRadius: '100%',
+      borderRadius: 100,
       eyeRotation: 0,
       view: Vehicle.view,
       viewArgs: viewArgs,
@@ -62,27 +62,15 @@ var Brait = {}, exports = Brait;
     });
   }
 
-  Vehicle.view = function(i) {
-
-    var obj = document.createElement('div'),
-    eye = document.createElement('div');
-    eye.id = 'eye' + this.id;
-    eye.className = 'eye';
-    eye.style.background = !i ? 'rgb(100, 100, 100)' : 'rgb(255, 255, 255)',
-    eye.style.opacity = 1;
-    obj.appendChild(eye);
-    return obj;
-  };
-
   Vehicle.beforeStep = function() {
-    return function() {
+
       var i, max;
 
       if (getRandomNumber(0, 300) === 1) {
         this.randomRadius = 100;
         this.seekTarget = { // find a random point and steer toward it
-          location: Flora.Vector.VectorAdd(this.location,
-              new Flora.Vector(getRandomNumber(-this.randomRadius, this.randomRadius),
+          location: Burner.Vector.VectorAdd(this.location,
+              new Burner.Vector(getRandomNumber(-this.randomRadius, this.randomRadius),
               getRandomNumber(-this.randomRadius, this.randomRadius)))
         };
         var me = this;
@@ -92,7 +80,7 @@ var Brait = {}, exports = Brait;
       }
 
       // check if agent intersects w stimulators
-      var lights = Flora.Mantle.System._Caches.Light;
+      var lights = Burner.System._caches.Light;
       if (lights) {
         for (i = 0, max = lights.list.length; i < max; i += 1) {
           // check the obj has not been marked as deleted
@@ -104,7 +92,7 @@ var Brait = {}, exports = Brait;
         }
       }
 
-      var oxygen = Flora.Mantle.System._Caches.Oxygen;
+      var oxygen = Burner.System._caches.Oxygen;
       if (oxygen) {
         for (i = 0, max = oxygen.list.length; i < max; i += 1) {
           // check the obj has not been marked as deleted
@@ -116,7 +104,7 @@ var Brait = {}, exports = Brait;
         }
       }
 
-      var food = Flora.Mantle.System._Caches.Food;
+      var food = Burner.System._caches.Food;
       if (food) {
         for (i = 0, max = food.list.length; i < max; i += 1) {
           // check the obj has not been marked as deleted
@@ -135,7 +123,7 @@ var Brait = {}, exports = Brait;
         eye.style.webkitTransform = 'rotate(' + a + 'deg)';
         this.eyeRotation += Flora.Utils.map(this.velocity.mag(), this.minSpeed, this.maxSpeed, 3, 50);
       }
-    };
+
   };
 
 
@@ -146,7 +134,7 @@ var Brait = {}, exports = Brait;
    */
   function Sensor(options) {
 
-    var system = Flora.Mantle.System,
+    var system = Burner.System,
         type = options.type,
         behavior = options.behavior,
         afterStep = options.afterStep || Sensor.afterStep;
@@ -160,9 +148,9 @@ var Brait = {}, exports = Brait;
 
   Sensor.afterStep = function() {
 
-    var system = Flora.Mantle.System;
+    var system = Burner.System;
 
-    return function() {
+
       if (this.activated) {
 
         if (!this.connector) {
@@ -177,12 +165,12 @@ var Brait = {}, exports = Brait;
         this.opacity = 1;
       } else {
         if (this.connector) {
-          system.destroyElement(this.connector);
+          system.destroyItem(this.connector);
           this.connector = null;
         }
         this.opacity = 0.75;
       }
-    };
+
   };
 
   /**
@@ -192,7 +180,7 @@ var Brait = {}, exports = Brait;
    */
   function Stimulus(options) {
 
-    var system = Flora.Mantle.System,
+    var system = Burner.System,
         location = options.location,
         size = options.size,
         type = options.type;
@@ -216,7 +204,7 @@ var Brait = {}, exports = Brait;
 
   Stimulus.create = function(e, loc, type) {
 
-    var location = e ? new Flora.Vector(e.offsetX, e.offsetY) : loc;
+    var location = e ? new Burner.Vector(e.offsetX, e.offsetY) : loc;
     new Brait.Stimulus({
       location: location,
       size: getRandomNumber(15, 75),
@@ -226,7 +214,7 @@ var Brait = {}, exports = Brait;
 
   Stimulus.createHeat = function(e) {
     new Brait.Stimulus({
-      location: new Flora.Vector(e.offsetX, e.offsetY),
+      location: new Burner.Vector(e.offsetX, e.offsetY),
       size: getRandomNumber(15, 75),
       type: [Brait.Heat]
     });
@@ -234,7 +222,7 @@ var Brait = {}, exports = Brait;
 
   Stimulus.createCold = function(e) {
     new Brait.Stimulus({
-      location: new Flora.Vector(e.offsetX, e.offsetY),
+      location: new Burner.Vector(e.offsetX, e.offsetY),
       size: getRandomNumber(15, 75),
       type: [Brait.Cold]
     });
@@ -242,9 +230,17 @@ var Brait = {}, exports = Brait;
 
   Stimulus.createLight = function(e) {
     new Brait.Stimulus({
-      location: new Flora.Vector(e.offsetX, e.offsetY),
+      location: new Burner.Vector(e.offsetX, e.offsetY),
       size: getRandomNumber(15, 75),
       type: [Brait.Light]
+    });
+  };
+
+  Stimulus.createFood = function(e) {
+    new Brait.Stimulus({
+      location: new Burner.Vector(e.offsetX, e.offsetY),
+      size: getRandomNumber(15, 75),
+      type: [Brait.Food]
     });
   };
 
@@ -267,7 +263,8 @@ var Brait = {}, exports = Brait;
         location = options.location,
         size = options.size;
 
-    return system.add('Heat', {
+    return system.add('Stimulus', {
+      type: 'Heat',
       color: palettes.heat.getColor(),
       width: size,
       height: size,
@@ -275,19 +272,16 @@ var Brait = {}, exports = Brait;
       scaleTarget: 1,
       isStatic: true,
       location: location,
-      borderRadius: '100%',
       borderWidth: getRandomNumber(2, 6),
       borderStyle: Stimulus.borderStyles[getRandomNumber(0, Stimulus.borderStyles.length - 1)],
       borderColor: palettes.heat.getColor(),
       boxShadow: '0 0 0 ' + getRandomNumber(2, 6) + 'px rgb(' + palettes.heat.getColor().toString() + ')',
       beforeStep: function() {
-        return function () {
-          if (this.scaleTarget && this.scale < this.scaleTarget) {
-            this.scale *= 1.2;
-          } else {
-            this.scaleTarget = null;
-          }
-        };
+        if (this.scaleTarget && this.scale < this.scaleTarget) {
+          this.scale *= 1.2;
+        } else {
+          this.scaleTarget = null;
+        }
       }
     });
   }
@@ -303,7 +297,8 @@ var Brait = {}, exports = Brait;
         location = options.location,
         size = options.size;
 
-    return system.add('Cold', {
+    return system.add('Stimulus', {
+      type: 'Cold',
       color: palettes.cold.getColor(),
       width: size,
       height: size,
@@ -311,19 +306,16 @@ var Brait = {}, exports = Brait;
       scaleTarget: 1,
       isStatic: true,
       location: location,
-      borderRadius: '100%',
       borderWidth: getRandomNumber(2, 6),
       borderStyle: Stimulus.borderStyles[getRandomNumber(0, Stimulus.borderStyles.length - 1)],
       borderColor: palettes.cold.getColor(),
       boxShadow: '0 0 0 ' + getRandomNumber(2, 6) + 'px rgb(' + palettes.cold.getColor().toString() + ')',
       beforeStep: function() {
-        return function() {
-          if (this.scaleTarget && this.scale < this.scaleTarget) {
-            this.scale *= 1.15;
-          } else {
-            this.scaleTarget = null;
-          }
-        };
+        if (this.scaleTarget && this.scale < this.scaleTarget) {
+          this.scale *= 1.15;
+        } else {
+          this.scaleTarget = null;
+        }
       }
     });
   }
@@ -340,7 +332,8 @@ var Brait = {}, exports = Brait;
         size = options.size,
         onCollision = options.onCollision || function() {};
 
-    return system.add('Light', {
+    return system.add('Stimulus', {
+      type: 'Light',
       color: palettes.light.getColor(),
       width: size,
       height: size,
@@ -348,7 +341,6 @@ var Brait = {}, exports = Brait;
       scaleTarget: 1,
       isStatic: true,
       location: location,
-      borderRadius: '100%',
       borderWidth: getRandomNumber(2, 6),
       borderStyle: Stimulus.borderStyles[getRandomNumber(0,
           Stimulus.borderStyles.length - 1)],
@@ -356,26 +348,24 @@ var Brait = {}, exports = Brait;
       boxShadow: '0 0 0 ' + getRandomNumber(2, 6) + 'px rgb(' + palettes.light.getColor().toString() + ')',
       collide: onCollision,
       beforeStep: function() {
-        return function() {
-          if (this.scaleTarget && this.scale < this.scaleTarget) {
-            this.scale *= 1.14;
-          } else {
-            this.scaleTarget = null;
-          }
-        };
+        if (this.scaleTarget && this.scale < this.scaleTarget) {
+          this.scale *= 1.14;
+        } else {
+          this.scaleTarget = null;
+        }
       }
     });
   }
 
   Light.collide = function(i) {
 
-    var system = Flora.Mantle.System,
-        lights = system._Caches.Light,
+    var system = Burner.System,
+        lights = system._caches.Light,
         x = lights.list[i].location.x,
         y = lights.list[i].location.y;
 
     system.add('ParticleSystem', {
-      location: new Flora.Vector(x, y),
+      location: new Burner.Vector(x, y),
       startColor: palettes.light.getColor(),
       endColor: [255, 255, 255],
       life: 0,
@@ -389,11 +379,11 @@ var Brait = {}, exports = Brait;
       }
     });
 
-    system.destroyElement(lights.list[i]);
+    system.destroyItem(lights.list[i]);
 
-    var world = Flora.Mantle.System.allWorlds()[0];
+    var world = Burner.System.firstWorld();
 
-    Brait.Stimulus.create(null, new Flora.Vector(getRandomNumber(0, world.bounds[1]),
+    Brait.Stimulus.create(null, new Burner.Vector(getRandomNumber(0, world.bounds[1]),
         getRandomNumber(0, world.bounds[2])), [Brait.Light]);
 
   };
@@ -410,7 +400,8 @@ var Brait = {}, exports = Brait;
         size = options.size,
         onCollision = options.onCollision || function() {};
 
-    return system.add('Oxygen', {
+    return system.add('Stimulus', {
+      type: 'Oxygen',
       color: palettes.oxygen.getColor(),
       width: size,
       height: size,
@@ -418,7 +409,6 @@ var Brait = {}, exports = Brait;
       scaleTarget: 1,
       isStatic: true,
       location: location,
-      borderRadius: '100%',
       borderWidth: getRandomNumber(2, 6),
       borderStyle: Stimulus.borderStyles[getRandomNumber(0,
           Stimulus.borderStyles.length - 1)],
@@ -426,27 +416,25 @@ var Brait = {}, exports = Brait;
       boxShadow: '0 0 0 ' + getRandomNumber(2, 6) + 'px rgb(' + palettes.oxygen.getColor().toString() + ')',
       collide: onCollision,
       beforeStep: function() {
-        return function() {
-          if (this.scaleTarget && this.scale < this.scaleTarget) {
-            this.scale *= 1.12;
-          } else {
-            this.scaleTarget = null;
-          }
-        };
+        if (this.scaleTarget && this.scale < this.scaleTarget) {
+          this.scale *= 1.12;
+        } else {
+          this.scaleTarget = null;
+        }
       }
     });
   }
 
   Oxygen.collide = function(i) {
 
-    var system = Flora.Mantle.System,
-        world = system.allWorlds()[0],
-        oxygen = system._Caches.Oxygen;
+    var system = Burner.System,
+        world = system.firstWorld(),
+        oxygen = system._caches.Oxygen;
 
     oxygen.list[i].scale -= 0.015;
-    if (oxygen.list[i].scale < 0.1) {
-      system.destroyElement(oxygen.list[i]);
-      Brait.Stimulus.create(null, new Flora.Vector(getRandomNumber(0, world.bounds[1]),
+    if (oxygen.list[i].scale < 0.2) {
+      system.destroyItem(oxygen.list[i]);
+      Brait.Stimulus.create(null, new Burner.Vector(getRandomNumber(0, world.bounds[1]),
         getRandomNumber(0, world.bounds[2])), [Brait.Oxygen]);
     }
   };
@@ -460,10 +448,11 @@ var Brait = {}, exports = Brait;
 
     var system = options.system,
         location = options.location,
-        size = options.size,
+        size = getRandomNumber(50, 80),
         onCollision = options.onCollision || function() {};
 
-    return system.add('Food', {
+    return system.add('Stimulus', {
+      type: 'Food',
       color: palettes.food.getColor(),
       width: size,
       height: size,
@@ -471,7 +460,6 @@ var Brait = {}, exports = Brait;
       scaleTarget: 1,
       isStatic: true,
       location: location,
-      borderRadius: '100%',
       borderWidth: getRandomNumber(4, 8),
       borderStyle: Stimulus.borderStyles[getRandomNumber(0,
           Stimulus.borderStyles.length - 1)],
@@ -479,27 +467,25 @@ var Brait = {}, exports = Brait;
       boxShadow: '0 0 0 ' + getRandomNumber(2, 6) + 'px rgb(' + palettes.food.getColor().toString() + ')',
       collide: onCollision,
       beforeStep: function() {
-        return function() {
-          if (this.scaleTarget && this.scale < this.scaleTarget) {
-            this.scale *= 1.1;
-          } else {
-            this.scaleTarget = null;
-          }
-        };
+        if (this.scaleTarget && this.scale < this.scaleTarget) {
+          this.scale *= 1.1;
+        } else {
+          this.scaleTarget = null;
+        }
       }
     });
   }
 
   Food.collide = function(i) {
 
-    var system = Flora.Mantle.System,
-        world = system.allWorlds()[0],
-        food = system._Caches.Food;
+    var system = Burner.System,
+        world = system.firstWorld(),
+        food = system._caches.Food;
 
     food.list[i].scale -= 0.015;
-    if (food.list[i].scale < 0.1) {
-      system.destroyElement(food.list[i]);
-      Brait.Stimulus.create(null, new Flora.Vector(getRandomNumber(0, world.bounds[1]),
+    if (food.list[i].scale < 0.2) {
+      system.destroyItem(food.list[i]);
+      Brait.Stimulus.create(null, new Burner.Vector(getRandomNumber(0, world.bounds[1]),
         getRandomNumber(0, world.bounds[2])), [Brait.Food]);
     }
   };
