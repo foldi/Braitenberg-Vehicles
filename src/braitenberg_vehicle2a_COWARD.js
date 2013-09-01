@@ -58,6 +58,7 @@ Flora.Utils.addEvent(document.getElementById('buttonStart'), "mouseup", function
   if (e.stopPropagation) {
     e.stopPropagation();
   }
-  document.getElementById('containerMenu').removeChild(document.getElementById('containerButton'));
+  document.getElementById('containerMenu').parentNode.removeChild(document.getElementById('containerMenu'));
+  //document.getElementById('containerMenu').removeChild(document.getElementById('containerButton'));
   Burner.System.start();
 });
