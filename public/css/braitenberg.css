@@ -4,7 +4,7 @@ body {
 }
 .container-menu {
 	position: absolute;
-	bottom: 50%; right: 35%;
+	top: 5%; left: 5%;
 	width: 500px; height: auto;
 	opacity: 0.85;
 	-webkit-user-select: none;

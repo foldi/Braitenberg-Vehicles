@@ -22,8 +22,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* Version: 2.0.0 */
-/* Build time: May 27, 2013 01:04:25 *//**
+/* Version: 2.0.8 */
+/* Build time: June 16, 2013 07:51:47 *//**
  * @namespace
  * @requires Burner
  */
@@ -352,27 +352,27 @@ Utils.log = function(msg) {
 
 /**
  * @returns {Object} The current window width and height.
- * @example getWindowDim() returns {width: 1024, height: 768}
+ * @example getWindowSize() returns {width: 1024, height: 768}
  */
 Utils.getWindowSize = function() {
   var d = {
     'width' : false,
     'height' : false
   };
-  if (typeof(window.innerWidth) !== "undefined") {
+  if (typeof(window.innerWidth) !== 'undefined') {
     d.width = window.innerWidth;
-  } else if (typeof(document.documentElement) !== "undefined" &&
-      typeof(document.documentElement.clientWidth) !== "undefined") {
+  } else if (typeof(document.documentElement) !== 'undefined' &&
+      typeof(document.documentElement.clientWidth) !== 'undefined') {
     d.width = document.documentElement.clientWidth;
-  } else if (typeof(document.body) !== "undefined") {
+  } else if (typeof(document.body) !== 'undefined') {
     d.width = document.body.clientWidth;
   }
-  if (typeof(window.innerHeight) !== "undefined") {
+  if (typeof(window.innerHeight) !== 'undefined') {
     d.height = window.innerHeight;
-  } else if (typeof(document.documentElement) !== "undefined" &&
-      typeof(document.documentElement.clientHeight) !== "undefined") {
+  } else if (typeof(document.documentElement) !== 'undefined' &&
+      typeof(document.documentElement.clientHeight) !== 'undefined') {
     d.height = document.documentElement.clientHeight;
-  } else if (typeof(document.body) !== "undefined") {
+  } else if (typeof(document.body) !== 'undefined') {
     d.height = document.body.clientHeight;
   }
   return d;
@@ -406,8 +406,9 @@ Utils.capitalizeFirstLetter = function(string) {
 };
 
 /**
- * Determines if this object is inside another.
+ * Determines if one object is inside another.
  *
+ * @param {Object} obj The object.
  * @param {Object} container The containing object.
  * @returns {boolean} Returns true if the object is inside the container.
  */
@@ -1037,7 +1038,7 @@ function Caption(opt_options) {
   this.world = options.world || Burner.System.firstWorld();
   this.position = options.position || 'top left';
   this.text = options.text || '';
-  this.opacity = options.opacity === 0 ? 0 : options.opacity || 0.75;
+  this.opacity = options.opacity === undefined ? 0.75 : options.opacity;
   this.color = options.color || [255, 255, 255];
   this.borderWidth = options.borderWidth || 0;
   this.borderStyle = options.borderStyle || 'none';
@@ -1128,7 +1129,7 @@ function InputMenu(opt_options) {
   // if a world is not passed, use the first world in the universe
   this.world = options.world || exports.universe.first();
   this.position = options.position || 'top left';
-  this.opacity = options.opacity === 0 ? 0 : options.opacity || 0.75;
+  this.opacity = options.opacity === undefined ? 0.75 : options.opacity;
   this.color = options.color || [255, 255, 255];
   this.borderWidth = options.borderWidth || 0;
   this.borderStyle = options.borderStyle || 'none';
@@ -1236,25 +1237,29 @@ exports.Utils.extend(Mover, Burner.Item);
  * @param {number} [opt_options.height = 10] Height
  * @param {string|Array} [opt_options.color = [255, 255, 255]] Color.
  * @param {number} [opt_options.motorSpeed = 2] Motor speed
- * @param {number} [opt_options.angle = 10] Angle
+ * @param {number} [opt_options.angle = 0] Angle
  * @param {boolean} [opt_options.pointToDirection = true] If true, object will point in the direction it's moving.
  * @param {boolean} [opt_options.draggable = false] If true, object can move via drag and drop.
  * @param {Object} [opt_options.parent = null] A parent object. If set, object will be fixed to the parent relative to an offset distance.
+ * @param {boolean} [opt_options.pointToParentDirection = false] If true, object points in the direction of the parent's velocity.
  * @param {number} [opt_options.offsetDistance = 30] The distance from the center of the object's parent.
+ * @param {number} [opt_options.offsetAngle = 0] The rotation around the center of the object's parent.
  * @param {function} [opt_options.beforeStep = null] A function to run before the step() function.
  * @param {function} [opt_options.afterStep = null] A function to run after the step() function.
  */
 Mover.prototype.init = function(options) {
 
-  this.width = options.width || 20;
-  this.height = options.height || 20;
+  this.width = options.width === undefined ? 20 : options.width;
+  this.height = options.height === undefined ? 20 : options.height;
   this.color = options.color || [255, 255, 255];
   this.motorSpeed = options.motorSpeed || 0;
   this.angle = options.angle || 0;
-  this.pointToDirection = options.pointToDirection === false ? false : true;
+  this.pointToDirection = options.pointToDirection === undefined ? true : options.pointToDirection;
   this.draggable = !!options.draggable;
   this.parent = options.parent || null;
-  this.offsetDistance = options.offsetDistance || 30;
+  this.pointToParentDirection = !!options.pointToParentDirection;
+  this.offsetDistance = options.offsetDistance === undefined ? 30 : options.offsetDistance;
+  this.offsetAngle = options.offsetAngle || 0;
   this.beforeStep = options.beforeStep || null;
   this.afterStep = options.afterStep || null;
 
@@ -1301,8 +1306,6 @@ Mover.prototype.init = function(options) {
     exports.Utils.addEvent(this.el, 'mouseout', mouseout);
   }
 };
-
-Mover.prototype.name = 'Mover';
 
 Mover.prototype.mouseover = function(e) {
   this.isMouseOut = false;
@@ -1472,6 +1475,10 @@ Mover.prototype.step = function() {
       this.location.y = this.parent.location.y;
       this.location.add(new Burner.Vector(x, y)); // position the child
 
+      if (this.pointToParentDirection) {
+        this.angle = exports.Utils.radiansToDegrees(Math.atan2(this.parent.velocity.y, this.parent.velocity.x));
+      }
+
     } else {
       this.location = this.parent.location;
     }
@@ -1505,7 +1512,7 @@ Mover.prototype._seek = function(target) {
 
   desiredVelocity.normalize();
 
-  if (distanceToTarget < world.bounds[1] / 2) {
+  if (distanceToTarget < world.bounds[1] / 2) { // slow down to arrive at target
     var m = exports.Utils.map(distanceToTarget, 0, world.bounds[1] / 2, 0, this.maxSpeed);
     desiredVelocity.mult(m);
   } else {
@@ -1560,8 +1567,6 @@ Mover.prototype._checkAvoidEdges = function() {
  */
 Mover.prototype.drag = function(target) {
 
-
-
   var speed = this.velocity.mag(),
     dragMagnitude = -1 * target.c * speed * speed, // drag magnitude
     drag = exports.Utils.clone(this.velocity);
@@ -1584,7 +1589,7 @@ Mover.prototype.attract = function(attractor) {
     distance, strength;
 
   distance = force.mag();
-  distance = exports.Utils.constrain(distance, this.width * this.height/8, attractor.width * attractor.height); // min = scale/8 (totally arbitrary); max = scale; the size of the attractor
+  distance = exports.Utils.constrain(distance, this.width * this.height, attractor.width * attractor.height); // min = scale/8 (totally arbitrary); max = scale; the size of the attractor
   force.normalize();
   strength = (attractor.G * attractor.mass * this.mass) / (distance * distance);
   force.mult(strength);
@@ -1657,13 +1662,13 @@ Agent.prototype.init = function(opt_options) {
   Agent._superClass.prototype.init.call(this, options);
 
   this.followMouse = !!options.followMouse;
-  this.maxSteeringForce = options.maxSteeringForce || 10;
+  this.maxSteeringForce = options.maxSteeringForce === undefined ? 10 : options.maxSteeringForce;
   this.seekTarget = options.seekTarget || null;
   this.flocking = !!options.flocking;
-  this.desiredSeparation = options.desiredSeparation === 0 ? 0 : options.desiredSeparation || this.width * 2;
-  this.separateStrength = options.separateStrength === 0 ? 0 : options.separateStrength || 0.3;
-  this.alignStrength = options.alignStrength === 0 ? 0 : options.alignStrength || 0.2;
-  this.cohesionStrength = options.cohesionStrength === 0 ? 0 : options.cohesionStrength || 0.1;
+  this.desiredSeparation = options.desiredSeparation === undefined ? this.width * 2 : options.desiredSeparation;
+  this.separateStrength = options.separateStrength === undefined ? 0.3 : options.separateStrength;
+  this.alignStrength = options.alignStrength === undefined ? 0.2 : options.alignStrength;
+  this.cohesionStrength = options.cohesionStrength === undefined ? 0.1 : options.cohesionStrength;
   this.flowField = options.flowField || null;
   this.sensors = options.sensors || [];
 
@@ -1681,8 +1686,6 @@ Agent.prototype.init = function(opt_options) {
   this.followTargetVector = new Burner.Vector(); // used in Agent.applyForces()
   this.followDesiredVelocity = new Burner.Vector(); // used in Agent.follow()
 };
-
-Agent.prototype.name = 'Agent';
 
 /**
  * Applies Agent-specific forces.
@@ -1762,7 +1765,7 @@ Agent.prototype.applyForces = function() {
     this.applyForce(dir); // constantly applies a force
   }
 
-  if (this.followMouse) { // follow mouse
+  if (this.followMouse && !Burner.System.supportedFeatures.touch) { // follow mouse
     var t = {
       location: new Burner.Vector(Burner.System.mouse.location.x,
           Burner.System.mouse.location.y)
@@ -2008,10 +2011,9 @@ exports.Agent = Agent;
  * @param {Object} [opt_options=] A map of initial properties.
  */
 function Walker(opt_options) {
-
   var options = opt_options || {};
+  options.name = options.name || 'Walker';
   exports.Mover.call(this, options);
-  this.name = 'Walker';
 }
 exports.Utils.extend(Walker, exports.Mover);
 
@@ -2045,25 +2047,26 @@ Walker.prototype.init = function(opt_options) {
 
   var options = opt_options || {};
 
-  this.width = options.width || 10;
-  this.height = options.height || 10;
-  this.perlin = options.perlin || true;
+  this.width = options.width === undefined ? 10 : options.width;
+  this.height = options.height === undefined ? 10 : options.height;
+  this.perlin = options.perlin === undefined ? true : options.perlin;
   this.remainsOnScreen = !!options.remainsOnScreen;
-  this.perlinSpeed = options.perlinSpeed || 0.005;
+  this.perlinSpeed = options.perlinSpeed === undefined ? 0.005 : options.perlinSpeed;
   this.perlinTime = options.perlinTime || 0;
-  this.perlinAccelLow = options.perlinAccelLow || -0.075;
-  this.perlinAccelHigh = options.perlinAccelHigh || 0.075;
-  this.offsetX = options.offsetX || Math.random() * 10000;
-  this.offsetY = options.offsetY || Math.random() * 10000;
+  this.perlinAccelLow = options.perlinAccelLow === undefined ? -0.075 : options.perlinAccelLow;
+  this.perlinAccelHigh = options.perlinAccelHigh === undefined ? 0.075 : options.perlinAccelHigh;
+  this.offsetX = options.offsetX === undefined ? Math.random() * 10000 : options.offsetX;
+  this.offsetY = options.offsetY === undefined ? Math.random() * 10000 : options.offsetY;
   this.random = !!options.random;
-  this.randomRadius = options.randomRadius || 100;
+  this.randomRadius = options.randomRadius === undefined ? 100 : options.randomRadius;
   this.color = options.color || [255, 150, 50];
-  this.borderWidth = options.borderWidth || 2;
+  this.borderWidth = options.borderWidth === undefined ? 2 : options.borderWidth;
   this.borderStyle = options.borderStyle || 'solid';
   this.borderColor = options.borderColor || [255, 255, 255];
-  this.borderRadius = options.borderRadius || 100;
+  this.borderRadius = options.borderRadius === undefined ? 100 : options.borderRadius;
   this.avoidWorldEdges = !!options.avoidWorldEdges;
-  this.avoidWorldEdgesStrength = options.avoidWorldEdgesStrength || 50;
+  this.avoidWorldEdgesStrength = options.avoidWorldEdgesStrength === undefined ?
+      50 : options.avoidWorldEdgesStrength;
 };
 
 /**
@@ -2141,22 +2144,20 @@ Sensor.prototype.init = function(opt_options) {
 
   this.type = options.type || '';
   this.behavior = options.behavior || 'LOVE';
-  this.sensitivity = options.sensitivity === 0 ? 0 : options.sensitivity || 2;
-  this.width = options.width === 0 ? 0 : options.width || 7;
-  this.height = options.height === 0 ? 0 : options.height || 7;
-  this.offsetDistance = options.offsetDistance === 0 ? 0 : options.offsetDistance|| 30;
+  this.sensitivity = options.sensitivity === undefined ? 2 : options.sensitivity;
+  this.width = options.width === undefined ? 7 : options.width;
+  this.height = options.height === undefined ? 7 : options.height;
+  this.offsetDistance = options.offsetDistance === undefined ? 30 : options.offsetDistance;
   this.offsetAngle = options.offsetAngle || 0;
-  this.opacity = options.opacity === 0 ? 0 : options.opacity || 0.75;
+  this.opacity = options.opacity === undefined ? 0.75 : options.opacity;
   this.target = options.target || null;
   this.activated = !!options.activated;
   this.activatedColor = options.activatedColor || [255, 255, 255];
-  this.borderRadius = 100;
-  this.borderWidth = 2;
+  this.borderRadius = options.borderRadius === undefined ? 100 : options.borderRadius;
+  this.borderWidth = options.borderWidth === undefined ? 2 : options.borderWidth;
   this.borderStyle = 'solid';
   this.borderColor = [255, 255, 255];
 };
-
-Sensor.prototype.name = 'Sensor';
 
 /**
  * Called every frame, step() updates the instance's properties.
@@ -2246,32 +2247,51 @@ Sensor.prototype.step = function() {
 };
 
 /**
- * Returns a force to apply to an agentwhen its sensor is activated.
+ * Returns a force to apply to an agent when its sensor is activated.
  *
  */
 Sensor.prototype.getActivationForce = function(agent) {
 
-  var distanceToTarget, m, v, steer;
+  var distanceToTarget, desiredVelocity, m, v, steer;
 
   switch (this.behavior) {
 
     /**
      * Steers toward target
      */
-    case "AGGRESSIVE":
-      return this._seek(this.target);
+    case 'AGGRESSIVE':
+      desiredVelocity = Burner.Vector.VectorSub(this.target.location, this.location);
+      distanceToTarget = desiredVelocity.mag();
+      desiredVelocity.normalize();
+
+      m = distanceToTarget/agent.maxSpeed;
+      desiredVelocity.mult(m);
+
+      desiredVelocity.sub(agent.velocity);
+      desiredVelocity.limit(agent.maxSteeringForce);
+
+    return desiredVelocity;
 
     /**
      * Steers away from the target
      */
-    case "COWARD":
-      var f = this._seek(this.target);
-      return f.mult(-1);
+    case 'COWARD':
+      desiredVelocity = Burner.Vector.VectorSub(this.target.location, this.location);
+      distanceToTarget = desiredVelocity.mag();
+      desiredVelocity.normalize();
+
+      m = distanceToTarget/agent.maxSpeed;
+      desiredVelocity.mult(-m);
+
+      desiredVelocity.sub(agent.velocity);
+      desiredVelocity.limit(agent.maxSteeringForce);
+
+    return desiredVelocity;
 
     /**
      * Speeds toward target and keeps moving
      */
-    case "LIKES":
+    case 'LIKES':
       var dvLikes = Burner.Vector.VectorSub(this.target.location, this.location);
       distanceToTarget = dvLikes.mag();
       dvLikes.normalize();
@@ -2286,7 +2306,7 @@ Sensor.prototype.getActivationForce = function(agent) {
     /**
      * Arrives at target and remains
      */
-    case "LOVES":
+    case 'LOVES':
       var dvLoves = Burner.Vector.VectorSub(this.target.location, this.location); // desiredVelocity
       distanceToTarget = dvLoves.mag();
       dvLoves.normalize();
@@ -2305,7 +2325,7 @@ Sensor.prototype.getActivationForce = function(agent) {
     /**
      * Arrives at target but does not stop
      */
-    case "EXPLORER":
+    case 'EXPLORER':
 
       var dvExplorer = Burner.Vector.VectorSub(this.target.location, this.location);
       distanceToTarget = dvExplorer.mag();
@@ -2324,12 +2344,12 @@ Sensor.prototype.getActivationForce = function(agent) {
     /*case "RUN":
       return this.flee(this.target);*/
 
-    case "ACCELERATE":
+    case 'ACCELERATE':
       v = agent.velocity.clone();
       v.normalize();
       return v.mult(agent.minSpeed);
 
-    case "DECELERATE":
+    case 'DECELERATE':
       v = agent.velocity.clone();
       v.normalize();
       return v.mult(-agent.minSpeed);
@@ -2382,7 +2402,7 @@ exports.Utils.extend(Connector, Burner.Item);
  * @param {number} [options.zIndex = 0] zIndex.
  * @param {number} [options.borderWidth = 1] Border width.
  * @param {string} [options.borderStyle = 'dotted'] Border style.
- * @param {Array} [options.borderColor = [100, 100, 100]] Border color.
+ * @param {Array} [options.borderColor = [150, 150, 150]] Border color.
  */
 Connector.prototype.init = function(options) {
 
@@ -2392,20 +2412,18 @@ Connector.prototype.init = function(options) {
   this.parentA = options.parentA;
   this.parentB = options.parentB;
 
-  this.opacity = options.opacity === 0 ? 0 : options.opacity || 1;
+  this.opacity = options.opacity === undefined ? 1 : options.opacity;
   this.zIndex = options.zIndex || 0;
 
   this.borderWidth = 1;
   this.borderRadius = 0;
   this.borderStyle = 'dotted';
-  this.borderColor = [150, 150, 150];
+  this.borderColor = options.borderColor === undefined ? [150, 150, 150] : options.borderColor;
 
   this.width = 0;
   this.height = 0;
   this.color = 'transparent';
 };
-
-Connector.prototype.name = 'Connector';
 
 /**
  * Called every frame, step() updates the instance's properties.
@@ -2430,15 +2448,15 @@ exports.Connector = Connector;
  * Creates a new Point.
  *
  * @constructor
- * @extends Burner.Item
+ * @extends Mover
  * @param {Object} [opt_options=] A map of initial properties.
  */
 function Point(opt_options) {
   var options = opt_options || {};
   options.name = options.name || 'Point';
-  Burner.Item.call(this, options);
+  exports.Mover.call(this, options);
 }
-exports.Utils.extend(Point, Burner.Item);
+exports.Utils.extend(Point, exports.Mover);
 
 /**
  * Initializes an instance.
@@ -2459,19 +2477,17 @@ Point.prototype.init = function(opt_options) {
 
   var options = opt_options || {};
 
-  this.width = options.width === 0 ? 0 : options.width || 10;
-  this.height = options.height === 0 ? 0 : options.height || 10;
-  this.opacity = options.opacity === 0 ? 0 : options.opacity || 1;
+  this.width = options.width === undefined ? 10 : options.width;
+  this.height = options.height === undefined ? 10 : options.height;
+  this.opacity = options.opacity === undefined ? 1 : options.opacity;
   this.isStatic = options.isStatic === false ? false : options.isStatic || true;
-  this.zIndex = options.zIndex === 0 ? 0 : options.zIndex || 1;
+  this.zIndex = options.zIndex === undefined ? 1 : options.zIndex;
   this.color = options.color || [200, 200, 200];
-  this.borderRadius = options.borderRadius || 100;
-  this.borderWidth = options.borderWidth || 2;
+  this.borderRadius = options.borderRadius === undefined ? 100 : options.borderRadius;
+  this.borderWidth = options.borderWidth === undefined ? 2 : options.borderWidth;
   this.borderStyle = options.borderStyle || 'solid';
   this.borderColor = options.borderColor || [60, 60, 60];
 };
-
-Point.prototype.name = 'Point';
 
 exports.Point = Point;
 /*global exports, Burner */
@@ -2500,7 +2516,7 @@ exports.Utils.extend(Particle, exports.Agent);
  * @param {number} [opt_options.life = 0] The current life value. If greater than this.lifespan, object is destroyed.
  * @param {boolean} {opt_options.fade = true} If true, opacity decreases proportionally with life.
  * @param {boolean} {opt_options.shrink = true} If true, width and height decrease proportionally with life.
- * @param {boolean} [opt_options.checkEdges = false] Set to true to check the object's location against the world's bounds.
+ * @param {boolean} [opt_options.checkWorldEdges = false] Set to true to check the object's location against the world's bounds.
  * @param {number} [opt_options.maxSpeed = 4] Maximum speed.
  * @param {number} [opt_options.zIndex = 1] The object's zIndex.
  * @param {Array} [opt_options.color = [200, 200, 200]] Color.
@@ -2516,34 +2532,34 @@ Particle.prototype.init = function(opt_options) {
   var options = opt_options || {};
   Particle._superClass.prototype.init.call(this, options);
 
-  this.width = options.width === 0 ? 0 : options.width || 20;
-  this.height = options.height === 0 ? 0 : options.height || 20;
-  this.lifespan = options.lifespan === 0 ? 0 : options.lifespan || 50;
-  this.life = options.life === 0 ? 0 : options.life || 0;
-  this.fade = options.fade === false ? false : true;
-  this.shrink = options.shrink === false ? false : true;
-  this.checkEdges = !!options.checkEdges;
-  this.maxSpeed = options.maxSpeed || 4;
-  this.zIndex = options.zIndex || 1;
+  this.width = options.width === undefined ? 20 : options.width;
+  this.height = options.height === undefined ? 20 : options.height;
+  this.lifespan = options.lifespan === undefined ? 50 : options.lifespan;
+  this.life = options.life || 0;
+  this.fade = options.fade === undefined ? true : false;
+  this.shrink = options.shrink === undefined ? true : false;
+  this.checkWorldEdges = !!options.checkWorldEdges;
+  this.maxSpeed = options.maxSpeed === undefined ? 4 : 0;
+  this.zIndex = options.zIndex === undefined ? 1 : 0;
   this.color = options.color || [200, 200, 200];
-  this.borderWidth = options.borderWidth || this.width / 4;
+  this.borderWidth = options.borderWidth === undefined ? this.width / 4 : 0;
   this.borderStyle = options.borderStyle || 'none';
   this.borderColor = options.borderColor || 'transparent';
-  this.borderRadius = options.borderRadius || 100;
-  this.boxShadowSpread = options.boxShadowSpread || this.width / 4;
+  this.borderRadius = options.borderRadius === undefined ? 100 : 0;
+  this.boxShadowSpread = options.boxShadowSpread === undefined ? this.width / 4 : 0;
   this.boxShadowColor = options.boxShadowColor || 'transparent';
-
   if (!options.acceleration) {
     this.acceleration = new Burner.Vector(1, 1);
     this.acceleration.normalize();
-    this.acceleration.mult(30);
+    this.acceleration.mult(this.maxSpeed ? this.maxSpeed : 3);
     this.acceleration.rotate(exports.Utils.getRandomNumber(0, Math.PI * 2, true));
+  }
+  if (!options.velocity) {
+    this.velocity = new Burner.Vector();
   }
   this.initWidth = this.width;
   this.initHeight = this.height;
 };
-
-Particle.prototype.name = 'Particle';
 
 /**
  * Calculates location via sum of acceleration + velocity.
@@ -2648,21 +2664,21 @@ ParticleSystem.prototype.init = function(opt_options) {
   var options = opt_options || {};
   ParticleSystem._superClass.prototype.init.call(this, options);
 
-  this.isStatic = options.isStatic === false ? false : options.isStatic || true;
-  this.lifespan = options.lifespan === 0 ? 0 : options.lifespan || -1;
-  this.life = options.life === 0 ? 0 : options.life || 0;
-  this.width = options.width === 0 ? 0 : options.width || 0;
-  this.height = options.height === 0 ? 0 : options.height || 0;
-  this.burst = options.burst === 0 ? 0 : options.burst || 1;
-  this.burstRate = options.burstRate === 0 ? 0 : options.burstRate || 4;
-  this.emitRadius = options.emitRadius === 0 ? 0 : options.emitRadius || 3;
+  this.isStatic = options.isStatic === undefined ? true : options.isStatic;
+  this.lifespan = options.lifespan === undefined ? -1: options.lifespan;
+  this.life = options.life || 0;
+  this.width = options.width || 0;
+  this.height = options.height || 0;
+  this.burst = options.burst === undefined ? 1 : options.burst;
+  this.burstRate = options.burstRate === undefined ? 4 : options.burstRate;
+  this.emitRadius = options.emitRadius === undefined ? 3 : options.emitRadius;
   this.startColor = options.startColor || [100, 20, 20];
   this.endColor = options.endColor || [255, 0, 0];
   this.particleOptions = options.particleOptions || {
     width : 15,
     height : 15,
     lifespan : 50,
-    borderRadius : '100%',
+    borderRadius : 100,
     checkEdges : false,
     acceleration: null,
     velocity: null,
@@ -2676,6 +2692,11 @@ ParticleSystem.prototype.init = function(opt_options) {
   this.borderRadius = options.borderRadius || 0;
   this.clock = 0;
 
+  if (this.particleOptions.acceleration) {
+    this.initParticleAcceleration = new Burner.Vector(this.particleOptions.acceleration.x,
+      this.particleOptions.acceleration.y);
+  }
+
   var pl = new exports.ColorPalette();
   pl.addColor({ // adds a random sampling of colors to palette
     min: 12,
@@ -2687,8 +2708,7 @@ ParticleSystem.prototype.init = function(opt_options) {
   this.beforeStep = function () {
 
     var location, offset,
-        acceleration = this.particleOptions.acceleration,
-        maxSpeed = this.particleOptions.maxSpeed;
+        initAcceleration = this.initParticleAcceleration;
 
     if (this.life < this.lifespan) {
       this.life += 1;
@@ -2699,10 +2719,10 @@ ParticleSystem.prototype.init = function(opt_options) {
 
     if (this.clock % this.burstRate === 0) {
 
-      location = this.getLocation(); // use the system's location
+      location = this.getLocation(); // use the particle system's location
       offset = new Burner.Vector(1, 1); // get the emit radius
       offset.normalize();
-      offset.mult(this.emitRadius); // expand emit randius in a random direction
+      offset.mult(this.emitRadius); // expand emit radius in a random direction
       offset.rotate(exports.Utils.getRandomNumber(0, Math.PI * 2, true));
       location.add(offset);
 
@@ -2713,11 +2733,9 @@ ParticleSystem.prototype.init = function(opt_options) {
         this.particleOptions.borderStyle = 'solid';
         this.particleOptions.borderColor = pl.getColor();
         this.particleOptions.boxShadowColor = pl.getColor();
-        this.particleOptions.acceleration = new Burner.Vector(1, 1);
-        this.particleOptions.acceleration.normalize();
-        this.particleOptions.acceleration.mult(maxSpeed ? maxSpeed : 3);
-        this.particleOptions.acceleration.rotate(exports.Utils.getRandomNumber(0, Math.PI * 2, true));
-        this.particleOptions.velocity = new Burner.Vector();
+        if (initAcceleration) {
+          this.particleOptions.acceleration = new Burner.Vector(initAcceleration.x, initAcceleration.y);
+        }
         this.particleOptions.location = ParticleSystem.getParticleLocation(location);
 
         Burner.System.add('Particle', this.particleOptions);
@@ -2740,8 +2758,6 @@ ParticleSystem.getParticleLocation = function(location) {
     return new Burner.Vector(location.x, location.y);
   })();
 };
-
-ParticleSystem.prototype.name = 'ParticleSystem';
 
 exports.ParticleSystem = ParticleSystem;
 /*global exports, Burner */
@@ -2777,7 +2793,7 @@ exports.Utils.extend(Oscillator, Burner.Item);
  *    constant acceleration.
  * @param {Object} [opt_options.aVelocity = new Vector()] Angular velocity.
  * @param {boolean} [opt_options.isStatic = false] If true, object will not move.
- * @param {boolean} [opt_options.isPerlin = true] If set to true, object will use Perlin Noise to calculate its location.
+ * @param {boolean} [opt_options.isPerlin = false] If set to true, object will use Perlin Noise to calculate its location.
  * @param {number} [opt_options.perlinSpeed = 0.005] If isPerlin = true, perlinSpeed determines how fast the object location moves through the noise space.
  * @param {number} [opt_options.perlinTime = 0] Sets the Perlin Noise time.
  * @param {number} [opt_options.perlinAccelLow = -2] The lower bound of acceleration when isPerlin = true.
@@ -2808,25 +2824,23 @@ Oscillator.prototype.init = function(opt_options) {
   this.isStatic = !!options.isStatic;
 
   this.isPerlin = !!options.isPerlin;
-  this.perlinSpeed = options.perlinSpeed || 0.005;
+  this.perlinSpeed = options.perlinSpeed === undefined ? 0.005 : options.perlinSpeed;
   this.perlinTime = options.perlinTime || 0;
-  this.perlinAccelLow = options.perlinAccelLow || -2;
-  this.perlinAccelHigh = options.perlinAccelHigh || 2;
-  this.perlinOffsetX = options.perlinOffsetX || Math.random() * 10000;
-  this.perlinOffsetY = options.perlinOffsetY || Math.random() * 10000;
+  this.perlinAccelLow = options.perlinAccelLow === undefined ? -2 : options.perlinAccelLow;
+  this.perlinAccelHigh = options.perlinAccelHigh === undefined ? 2 : options.perlinAccelHigh;
+  this.perlinOffsetX = options.perlinOffsetX === undefined ? Math.random() * 10000 : options.perlinOffsetX;
+  this.perlinOffsetY = options.perlinOffsetY === undefined ? Math.random() * 10000 : options.perlinOffsetY;
 
-  this.width = options.width || 20;
-  this.height = options.height || 20;
+  this.width = options.width === undefined ? 20 : options.width;
+  this.height = options.height === undefined ? 20 : options.height;
   this.color = options.color || [200, 100, 0];
   this.borderWidth = options.borderWidth || 0;
   this.borderStyle = options.borderStyle || 'solid';
   this.borderColor = options.borderColor || [255, 150, 50];
-  this.borderRadius = options.borderRadius || 100;
+  this.borderRadius = options.borderRadius === undefined ? 100 : options.borderRadius;
   this.boxShadowSpread = options.boxShadowSpread || 0;
   this.boxShadowColor = options.boxShadowColor || [200, 100, 0];
 };
-
-Oscillator.prototype.name = 'Oscillator';
 
 /**
  * Updates the oscillator's properties.
@@ -2861,7 +2875,7 @@ Oscillator.prototype.step = function () {
       this._checkCameraEdges();
     }
 
-    if (this.checkEdges || this.wrapEdges) {
+    if (this.checkWorldEdges || this.wrapWorldEdges) {
       this._checkWorldEdges(world);
     }
 
@@ -2920,19 +2934,19 @@ Liquid.prototype.init = function(opt_options) {
   var options = opt_options || {};
   Liquid._superClass.prototype.init.call(this, options);
 
-  this.c = options.c === 0 ? 0 : options.c || 1;
-  this.mass = options.mass === 0 ? 0 : options.mass || 50;
-  this.isStatic = options.isStatic === false ? false : options.isStatic || true;
-  this.width = options.width === 0 ? 0 : options.width || 100;
-  this.height = options.height === 0 ? 0 : options.height || 100;
-  this.opacity = options.opacity === 0 ? 0 : options.opacity || 0.75;
-  this.zIndex = options.zIndex === 0 ? 0 : options.zIndex || 1;
+  this.c = options.c === undefined ? 1 : options.c;
+  this.mass = options.mass === undefined ? 50 : options.mass;
+  this.isStatic = options.isStatic === undefined ? true : options.isStatic;
+  this.width = options.width === undefined ? 100 : options.width;
+  this.height = options.height === undefined ? 100 : options.height;
+  this.opacity = options.opacity === undefined ? 0.75 : options.opacity;
+  this.zIndex = options.zIndex === undefined ? 1 : options.zIndex;
   this.color = options.color || [105, 210, 231];
-  this.borderWidth = options.borderWidth || this.width / 4;
+  this.borderWidth = options.borderWidth === undefined ? this.width / 4 : options.borderWidth;
   this.borderStyle = options.borderStyle || 'double';
   this.borderColor = options.borderColor || [167, 219, 216];
-  this.borderRadius = options.borderRadius || 100;
-  this.boxShadowSpread = options.boxShadowSpread || this.width / 8;
+  this.borderRadius = options.borderRadius === undefined ? 100 : options.borderRadius;
+  this.boxShadowSpread = options.boxShadowSpread === undefined ? this.width / 8 : options.boxShadowSpread;
   this.boxShadowColor = options.boxShadowColor || [147, 199, 196];
 
   Burner.System.updateCache(this);
@@ -2980,25 +2994,23 @@ Attractor.prototype.init = function(opt_options) {
 
   Attractor._superClass.prototype.init.call(this, options);
 
-  this.G = options.G === 0 ? 0 : options.G || 10;
-  this.mass = options.mass === 0 ? 0 : options.mass || 1000;
-  this.isStatic = options.isStatic === false ? false : options.isStatic || true;
-  this.width = options.width === 0 ? 0 : options.width || 100;
-  this.height = options.height === 0 ? 0 : options.height || 100;
-  this.opacity = options.opacity === 0 ? 0 : options.opacity || 0.75;
-  this.zIndex = options.zIndex === 0 ? 0 : options.zIndex || 1;
+  this.G = options.G === undefined ? 10 : options.G;
+  this.mass = options.mass === undefined ? 1000 : options.mass;
+  this.isStatic = options.isStatic === undefined ? true : options.isStatic;
+  this.width = options.width === undefined ? 100 : options.width;
+  this.height = options.height === undefined ? 100 : options.height;
+  this.opacity = options.opacity === undefined ? 0.75 : options.opacity;
+  this.zIndex = options.zIndex === undefined ? 1 : options.zIndex;
   this.color = options.color || [92, 187, 0];
-  this.borderWidth = options.borderWidth || this.width / 4;
+  this.borderWidth = options.borderWidth === undefined ? this.width / 4 : 0;
   this.borderStyle = options.borderStyle || 'double';
   this.borderColor = options.borderColor || [224, 228, 204];
-  this.borderRadius = options.borderRadius || 100;
-  this.boxShadowSpread = options.boxShadowSpread || this.width / 4;
+  this.borderRadius = options.borderRadius === undefined ? 100 : 0;
+  this.boxShadowSpread = options.boxShadowSpread === undefined ? this.width / 4 : 0;
   this.boxShadowColor = options.boxShadowColor || [64, 129, 0];
 
   Burner.System.updateCache(this);
 };
-
-Attractor.prototype.name = 'Attractor';
 
 exports.Attractor = Attractor;
 /*global exports, Burner */
@@ -3022,7 +3034,7 @@ exports.Utils.extend(Repeller, exports.Agent);
  *
  * @param {Object} [opt_options=] A map of initial properties.
  * @param {number} [opt_options.G = 1] Universal Gravitational Constant.
- * @param {number} [opt_options.mass = 100] Mass. Increase for a greater gravitational effect.
+ * @param {number} [opt_options.mass = 1000] Mass. Increase for a greater gravitational effect.
  * @param {boolean} [opt_options.isStatic = true] If true, object will not move.
  * @param {number} [opt_options.width = 10] Width.
  * @param {number} [opt_options.height = 10] Height.
@@ -3041,25 +3053,23 @@ Repeller.prototype.init = function(opt_options) {
   var options = opt_options || {};
   Repeller._superClass.prototype.init.call(this, options);
 
-  this.G = options.G === 0 ? 0 : options.G || -10;
-  this.mass = options.mass === 0 ? 0 : options.mass || 1000;
-  this.isStatic = options.isStatic === false ? false : options.isStatic || true;
-  this.width = options.width === 0 ? 0 : options.width || 100;
-  this.height = options.height === 0 ? 0 : options.height || 100;
-  this.opacity = options.opacity === 0 ? 0 : options.opacity || 0.75;
-  this.zIndex = options.zIndex === 0 ? 0 : options.zIndex || 10;
+  this.G = options.G === undefined ? -10 : options.G;
+  this.mass = options.mass === undefined ? 1000 : options.mass;
+  this.isStatic = options.isStatic === undefined ? true : options.isStatic;
+  this.width = options.width === undefined ? 100 : options.width;
+  this.height = options.height === undefined ? 100 : options.height;
+  this.opacity = options.opacity === undefined ? 0.75 : options.opacity;
+  this.zIndex = options.zIndex === undefined ? 10 : options.zIndex;
   this.color = options.color || [250, 105, 0];
-  this.borderWidth = options.borderWidth || this.width / 4;
+  this.borderWidth = options.borderWidth === undefined ? this.width / 4 : options.borderWidth;
   this.borderStyle = options.borderStyle || 'double';
   this.borderColor = options.borderColor || [224, 228, 204];
-  this.borderRadius = options.borderRadius || 100;
-  this.boxShadowSpread = options.boxShadowSpread || this.width / 4;
+  this.borderRadius = options.borderRadius === undefined ? 100 : options.borderRadius;
+  this.boxShadowSpread = options.boxShadowSpread === undefined ? this.width / 4 : options.boxShadowSpread;
   this.boxShadowColor = options.boxShadowColor || [250, 105, 0];
 
   Burner.System.updateCache(this);
 };
-
-Repeller.prototype.name = 'Repeller';
 
 exports.Repeller = Repeller;
 /*global exports, Burner */
@@ -3133,24 +3143,25 @@ Stimulus.prototype.init = function(opt_options) {
   var options = opt_options || {}, name = this.name.toLowerCase();
   Stimulus._superClass.prototype.init.call(this, options);
 
-  this.mass = options.mass === 0 ? 0 : options.mass || 50;
-  this.isStatic = options.isStatic === false ? false : options.isStatic || true;
-  this.width = options.width === 0 ? 0 : options.width || 50;
-  this.height = options.height === 0 ? 0 : options.height || 50;
-  this.opacity = options.opacity === 0 ? 0 : options.opacity || 0.75;
-  this.zIndex = options.zIndex === 0 ? 0 : options.zIndex || 1;
+  this.mass = options.mass === undefined ? 50 : options.mass ;
+  this.isStatic = options.isStatic === undefined ? true : options.isStatic;
+  this.width = options.width === undefined ? 50 : options.width;
+  this.height = options.height === undefined ? 50 : options.height;
+  this.opacity = options.opacity === undefined ? 0.75 : options.opacity;
+  this.zIndex = options.zIndex === undefined ? 1 : options.zIndex;
   this.color = options.color || palettes[name].getColor();
-  this.borderWidth = options.borderWidth || this.width / exports.Utils.getRandomNumber(2, 8);
-  this.borderStyle = options.borderStyle || borderPalette.getBorder();
-  this.borderColor = options.borderColor || palettes[name].getColor();
-  this.borderRadius = options.borderRadius || 100;
-  this.boxShadowSpread = options.boxShadowSpread || this.width / exports.Utils.getRandomNumber(2, 8);
-  this.boxShadowColor = options.boxShadowColor || boxShadowColors[name];
+  this.borderWidth = options.borderWidth === undefined ?
+      this.width / exports.Utils.getRandomNumber(2, 8) : options.borderWidth;
+  this.borderStyle = options.borderStyle === undefined ?
+      borderPalette.getBorder() : options.borderStyle;
+  this.borderColor = options.borderColor === undefined ? palettes[name].getColor() : options.borderColor;
+  this.borderRadius = options.borderRadius === undefined ? 100 : options.borderRadius;
+  this.boxShadowSpread = options.boxShadowSpread === undefined ?
+      this.width / exports.Utils.getRandomNumber(2, 8) : options.boxShadowSpread;
+  this.boxShadowColor = options.boxShadowColor === undefined ? boxShadowColors[name] : options.boxShadowColor;
 
   Burner.System.updateCache(this);
 };
-
-Stimulus.prototype.name = 'Stimulus';
 
 exports.Stimulus = Stimulus;
 /*global exports, Burner */
@@ -3181,16 +3192,14 @@ FlowField.prototype.init = function(opt_options) {
 
   var options = opt_options || {};
 
-  this.resolution = options.resolution || 50;
-  this.perlinSpeed = options.perlinSpeed || 0.01;
-  this.perlinTime = options.perlinTime || 100;
+  this.resolution = options.resolution === undefined ? 50 : options.resolution;
+  this.perlinSpeed = options.perlinSpeed === undefined ? 0.01 : options.perlinSpeed;
+  this.perlinTime = options.perlinTime === undefined ? 100 : options.perlinTime;
   this.field = options.field || null;
-  this.createMarkers = options.createMarkers || false;
+  this.createMarkers = !!options.createMarkers;
   // if a world is not passed, use the first world in the system
   this.world = options.world || Burner.System.firstWorld();
 };
-
-FlowField.prototype.name = 'FlowField';
 
 /**
  * Builds a FlowField.
@@ -3288,6 +3297,7 @@ function FlowFieldMarker(options) {
       height: options.height,
       opacity: options.opacity,
       angle: options.angle,
+      scale: 1,
       colorMode: options.colorMode,
       color0: options.color[0],
       color1: options.color[1],

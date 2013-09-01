@@ -23,9 +23,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* Version: 1.0.0 */
-/* Build time: May 27, 2013 01:24:18 */
+/* Build time: September 1, 2013 10:43:35 */
 
 /*global Flora, Burner, Brait, document */
+var world = new Burner.World(document.body, {
+  c: 0.01,
+  gravity: new Burner.Vector(),
+  width: Flora.Utils.getWindowSize().width / 0.75,
+  height: Flora.Utils.getWindowSize().height / 0.75,
+  borderWidth: 1,
+  borderStyle: 'dashed',
+  borderColor: [100, 100, 100],
+  color: [0, 0, 0],
+  boundToWindow: false
+});
+
 Burner.System.init(function() {
 
   var i, max,
@@ -66,17 +78,7 @@ Burner.System.init(function() {
   // add event listener to create random stimulant on mouseup
   Flora.Utils.addEvent(document, 'mouseup', Brait.Stimulus.createCold);
 
-}, {
-  c: 0.01,
-  gravity: new Burner.Vector(),
-  width: Flora.Utils.getWindowSize().width / 0.45,
-  height: Flora.Utils.getWindowSize().height / 0.45,
-  borderWidth: 1,
-  borderStyle: 'dashed',
-  borderColor: [100, 100, 100],
-  color: [0, 0, 0],
-  boundToWindow: false
-}, null, null, true);
+}, world, null, true);
 
 Flora.Utils.addEvent(document.getElementById('buttonStart'), "mouseup", function(e) {
 

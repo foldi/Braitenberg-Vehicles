@@ -1,4 +1,16 @@
 /*global Flora, Burner, Brait, document */
+var world = new Burner.World(document.body, {
+  c: 0.01,
+  gravity: new Burner.Vector(),
+  width: Flora.Utils.getWindowSize().width / 0.75,
+  height: Flora.Utils.getWindowSize().height / 0.75,
+  borderWidth: 1,
+  borderStyle: 'dashed',
+  borderColor: [100, 100, 100],
+  color: [0, 0, 0],
+  boundToWindow: false
+});
+
 Burner.System.init(function() {
 
   var i, max,
@@ -42,17 +54,7 @@ Burner.System.init(function() {
   // add event listener to create random stimulant on mouseup
   Flora.Utils.addEvent(document, 'mouseup', Brait.Stimulus.createFood);
 
-}, {
-  c: 0.01,
-  gravity: new Burner.Vector(),
-  width: Flora.Utils.getWindowSize().width / 0.45,
-  height: Flora.Utils.getWindowSize().height / 0.45,
-  borderWidth: 1,
-  borderStyle: 'dashed',
-  borderColor: [100, 100, 100],
-  color: [0, 0, 0],
-  boundToWindow: false
-}, null, null, true);
+}, world, null, true);
 
 Flora.Utils.addEvent(document.getElementById('buttonStart'), "mouseup", function(e) {
 

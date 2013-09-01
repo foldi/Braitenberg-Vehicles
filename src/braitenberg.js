@@ -35,7 +35,8 @@ var Brait = {}, exports = Brait;
         borderColor = options.borderColor,
         viewArgs = options.viewArgs,
         collisions = options.collisions || {},
-        beforeStep = options.beforeStep || Vehicle.beforeStep;
+        beforeStep = options.beforeStep || Vehicle.beforeStep,
+        maxSteeringForce = options.maxSteeringForce || getRandomNumber(2, 5, true);
 
     return system.add('Agent', {
       sensors: sensors,
@@ -44,7 +45,9 @@ var Brait = {}, exports = Brait;
       motorSpeed: 4,
       minSpeed: 1,
       maxSpeed: getRandomNumber(5, 10, true),
-      maxSteeringForce: getRandomNumber(3, 5, true),
+      //maxSpeed: 100,
+      maxSteeringForce: maxSteeringForce,
+      //maxSteeringForce: 100,
       controlCamera: controlCamera,
       wrapWorldEdges: true,
       color: color,
@@ -137,12 +140,14 @@ var Brait = {}, exports = Brait;
     var system = Burner.System,
         type = options.type,
         behavior = options.behavior,
-        afterStep = options.afterStep || Sensor.afterStep;
+        afterStep = options.afterStep || Sensor.afterStep,
+        maxSpeed = options.maxSpeed || 1;
 
     return system.add('Sensor', {
       type: type,
       behavior: behavior,
-      afterStep: afterStep
+      afterStep: afterStep,
+      maxSpeed: maxSpeed
     });
   }
 
