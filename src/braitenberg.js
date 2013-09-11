@@ -9,8 +9,8 @@ var Brait = {}, exports = Brait;
   var getRandomNumber = Flora.Utils.getRandomNumber,
       pal, color, palettes = {};
 
-  for (var i = 0, max = Flora.config.defaultColorList.length; i < max; i++) {
-    color = Flora.config.defaultColorList[i];
+  for (var i = 0, max = Flora.Config.defaultColorList.length; i < max; i++) {
+    color = Flora.Config.defaultColorList[i];
     pal = new Flora.ColorPalette();
     pal.addColor({
       min: 6,

@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* Version: 1.0.0 */
-/* Build time: September 1, 2013 11:42:44 */
+/* Build time: September 10, 2013 11:55:33 */
 
 /*global Flora, Burner, document, setTimeout */
 /** @namespace */
@@ -36,8 +36,8 @@ var Brait = {}, exports = Brait;
   var getRandomNumber = Flora.Utils.getRandomNumber,
       pal, color, palettes = {};
 
-  for (var i = 0, max = Flora.config.defaultColorList.length; i < max; i++) {
-    color = Flora.config.defaultColorList[i];
+  for (var i = 0, max = Flora.Config.defaultColorList.length; i < max; i++) {
+    color = Flora.Config.defaultColorList[i];
     pal = new Flora.ColorPalette();
     pal.addColor({
       min: 6,
